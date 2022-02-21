@@ -31,8 +31,10 @@ public class ComplaintService {
 
         if (lastUpdatedDate != null && getDiffBetweenDates(DateTime.now().toDate(), lastUpdatedDate) < 15) {
             all = repository.findAll();
+            System.out.println("Get all from DB");
         } else {
             all = crmService.getAllFromCRM();
+            System.out.println("Get all from CRM");
         }
 
         return all;
@@ -59,6 +61,7 @@ public class ComplaintService {
             complaint.setId(originalComplaint.getId());
             complaint.setTicketCreationDate(originalComplaint.getTicketCreationDate());
         }
+        repository.save(complaint);
     }
 
     private long getDiffBetweenDates(Date now, Date lastUpdatedDate) {

@@ -14,14 +14,10 @@ import java.util.Date;
 public class UpdateTime implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-
-    @Column(name = "LAST_UPDATED_DATE")
+    @Column(name = "LAST_UPDATED_DATE", nullable = false)
     private Date lastUpdatedDate;
 
     public static final class UpdatesBuilder {
-        private long id;
         private Date lastUpdatedDate;
 
         private UpdatesBuilder() {
@@ -38,7 +34,6 @@ public class UpdateTime implements Serializable {
 
         public UpdateTime build() {
             UpdateTime update = new UpdateTime();
-            update.setId(id);
             update.setLastUpdatedDate(lastUpdatedDate);
             return update;
         }

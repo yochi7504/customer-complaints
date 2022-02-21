@@ -16,9 +16,7 @@ public class UpdateTimeService {
     UpdateTimeRepository repository;
 
     public Date getLastUpdatedDate() {
-        UpdateTime lastUpdatedDate = repository.getLastUpdatedDate();
-
-        return lastUpdatedDate == null ? null : lastUpdatedDate.getLastUpdatedDate();
+        return repository.getLastUpdatedDate();
     }
 
     public void save(UpdateTime updateTime) {
