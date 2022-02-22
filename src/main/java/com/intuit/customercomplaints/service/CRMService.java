@@ -2,16 +2,14 @@ package com.intuit.customercomplaints.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuit.customercomplaints.model.Complaint;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +26,9 @@ public class CRMService {
     @Autowired
     UpdateTimeService updateTimeService;
 
+    @Value("${crm.url}")
+    String crmUrl;
+
     public List<Complaint> getAllFromCRM() {
         List<Complaint> complaintList = new ArrayList<>();
         try {
@@ -37,16 +38,7 @@ public class CRMService {
         } catch (Exception e) {
             System.out.println("Failed to fetch data from CRM system");
 
-            for (int i = 1; i <= 5; i++) {
-                Complaint complaint = aComplaint().caseId(i).customerId(i)
-                        .provider(i * 1500).createdErrorCode(i * 3000)
-                        .status(i % 5 == 0 ? Complaint.ComplaintStatus.OPEN : Complaint.ComplaintStatus.CLOSED)
-                        .ticketCreationDate(DateTime.now().toDate()).lastModifiedDate()
-                        .productName(i % 2 == 0 ? "RED" : "BLUE").crmSystem(i % 3 == 0 ? Complaint.CrmSystem.Banana : Complaint.CrmSystem.Strawberry)
-                        .build();
-                complaintService.save(complaint);
-                complaintList.add(complaint);
-            }
+            GenerateDataForFakeURL(complaintList);
         }
 
         updateTimeService.save(aUpdate().lastUpdatedDate().build());
@@ -54,46 +46,37 @@ public class CRMService {
         return complaintList;
     }
 
-//    private List<Complaint> extracted(Complaint.CrmSystem crmSystem) {
-//        new Thread(() -> {
-//            List<Complaint> complaintList = null;
-//            try {
-//                complaintList = getAllFromCRM(crmSystem.name());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            return complaintList;
-//        }).start();
-//    }
+    private void GenerateDataForFakeURL(List<Complaint> complaintList) {
+        for (int i = 1; i <= 5; i++) {
+            Complaint complaint = aComplaint().caseId(i).customerId(i)
+                    .provider(i * 1500).createdErrorCode(i * 3000)
+                    .status(i % 5 == 0 ? Complaint.ComplaintStatus.OPEN : Complaint.ComplaintStatus.CLOSED)
+                    .ticketCreationDate(DateTime.now().toDate()).lastModifiedDate()
+                    .productName(i % 2 == 0 ? "RED" : "BLUE").crmSystem(i % 3 == 0 ? Complaint.CrmSystem.Banana : Complaint.CrmSystem.Strawberry)
+                    .build();
+            complaintService.save(complaint);
+            complaintList.add(complaint);
+        }
+    }
 
     public List<Complaint> getAllFromCRM(String path) throws IOException {
         if (path.isBlank()) {
             return null;
         }
-        HttpClient httpClient = HttpClientBuilder.create().build();
+        OkHttpClient client = new OkHttpClient.Builder().build();
+        String url = crmUrl + path + "/";
 
-        HttpGet httpGet = new HttpGet("http://fakeurl/homeassignment/" + path + "/");
-        httpGet.addHeader("accept", "application/json");
-        org.apache.http.HttpResponse response = httpClient.execute(httpGet);
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("content-type", "application/json")
+                .addHeader("Accept-Language", "en-US,en;q=0.5")
+                .build();
 
-        if (response.getStatusLine().getStatusCode() != 200) {
-            throw new RuntimeException("Failed : HTTP error code : "
-                    + response.getStatusLine().getStatusCode());
-        }
-
-        BufferedReader bufferedReader = new BufferedReader(
-                new InputStreamReader((response.getEntity().getContent())));
-
-        String line;
-        StringBuilder stringBuilder = new StringBuilder();
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line);
-        }
-
-        bufferedReader.close();
+        String data = client.newCall(request).execute().body().string();
 
         ObjectMapper mapper = new ObjectMapper();
-        return Arrays.asList(mapper.readValue(stringBuilder.toString(), Complaint[].class));
+        return Arrays.asList(mapper.readValue(data, Complaint[].class));
     }
 
 }
