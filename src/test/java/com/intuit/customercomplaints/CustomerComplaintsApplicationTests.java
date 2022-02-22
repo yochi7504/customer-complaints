@@ -6,15 +6,18 @@ import com.intuit.customercomplaints.service.CRMService;
 import com.intuit.customercomplaints.service.ComplaintService;
 import org.joda.time.DateTime;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.intuit.customercomplaints.model.Complaint.ComplaintBuilder.aComplaint;
@@ -25,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith( SpringJUnit4ClassRunner.class )
 @ContextConfiguration
 @SpringBootTest
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class CustomerComplaintsApplicationTests {
 
     @Autowired
@@ -36,7 +40,7 @@ class CustomerComplaintsApplicationTests {
     @Autowired
     ComplaintRepository repository;
 
-    @Ignore
+//    @Ignore
     @Before
     public void setUp() {
         for (int i = 1 ; i <= 5 ; i++) {
@@ -50,7 +54,7 @@ class CustomerComplaintsApplicationTests {
         }
     }
 
-    @Ignore
+//    @Ignore
     @Test
     void testDataFromCRM() {
         System.out.println("-------------testDataFromCRM--------------");
@@ -58,7 +62,7 @@ class CustomerComplaintsApplicationTests {
         assertEquals(5, allFromCRM.size());
     }
 
-    @Ignore
+//    @Ignore
     @Test
     void testDataFromDB() {
         System.out.println("-------------testDataFromDB--------------");
@@ -66,28 +70,28 @@ class CustomerComplaintsApplicationTests {
         System.out.println(all);
     }
 
-    @Ignore
+//    @Ignore
 	@Test
 	void testFilterByProvider() {
-        assertEquals(1, complaintService.getAllWithFilter(1000, null, null));
+        assertEquals(1, ((ArrayList) complaintService.getAllWithFilter(1500, null, null)).size());
 	}
 
-    @Ignore
+//    @Ignore
 	@Test
 	void testFilterByErrorCode() {
-        assertEquals(1, complaintService.getAllWithFilter(null, 3000, null));
+        assertEquals(1, ((ArrayList) complaintService.getAllWithFilter(null, 3000, null)).size());
 	}
 
-    @Ignore
+//    @Ignore
     @Test
 	void testFilterByStatus() {
-        assertEquals(4, complaintService.getAllWithFilter(null, null, Complaint.ComplaintStatus.CLOSED.name()));
+        assertEquals(4, ((ArrayList) complaintService.getAllWithFilter(null, null, Complaint.ComplaintStatus.CLOSED.name())).size());
 	}
 
-    @Ignore
+//    @Ignore
 	@Test
 	void testFilter() {
-        assertEquals(1, complaintService.getAllWithFilter(2000, 6000, Complaint.ComplaintStatus.CLOSED.name()));
+        assertEquals(1, ((ArrayList) complaintService.getAllWithFilter(3000, 6000, Complaint.ComplaintStatus.CLOSED.name())).size());
 	}
 
 }
